@@ -1,0 +1,132 @@
+{
+  "hero": {
+    "title": "Formations professionnelles IT & Digital",
+    "subtitle": "Découvrez nos programmes certifiants en cybersécurité, IA, cloud, DevOps et data pour former vos équipes aux compétences critiques.",
+    "cta": {
+      "text": "Découvrir nos formations",
+      "link": "/formations"
+    }
+  },
+  "formations": [
+    {
+      "id": 1,
+      "title": "Cybersécurité des Systèmes Industriels",
+      "description": "Formation approfondie sur la sécurisation des systèmes SCADA et industriels",
+      "category": "cybersecurite",
+      "level": "avance",
+      "duration": 5,
+      "price": 2499,
+      "image": "/images/formation-1.jpg",
+      "date": "2024-12-15",
+      "instructor": "Expert Cybersécurité"
+    },
+    {
+      "id": 2,
+      "title": "Hacking et Sécurité Avancée",
+      "description": "Maîtrisez les techniques de hacking éthique et de sécurisation avancée",
+      "category": "cybersecurite",
+      "level": "avance",
+      "duration": 7,
+      "price": 3499,
+      "image": "/images/formation-2.jpg",
+      "date": "2024-12-20",
+      "instructor": "Hacker Éthique Certifié"
+    },
+    {
+      "id": 3,
+      "title": "Dark Web et Cybercriminalité",
+      "description": "Comprendre le Dark Web et les techniques de cybercriminalité pour mieux se protéger",
+      "category": "cybersecurite",
+      "level": "intermediaire",
+      "duration": 3,
+      "price": 1999,
+      "image": "/images/formation-3.jpg",
+      "date": "2025-01-10",
+      "instructor": "Expert Cybercriminalité"
+    },
+    {
+      "id": 4,
+      "title": "Sécurisation des Architectures Virtualisées",
+      "description": "Sécurisez vos environnements virtualisés et cloud",
+      "category": "cloud",
+      "level": "intermediaire",
+      "duration": 4,
+      "price": 2299,
+      "image": "/images/formation-4.jpg",
+      "date": "2025-01-15",
+      "instructor": "Architecte Cloud"
+    },
+    {
+      "id": 5,
+      "title": "Introduction à l'Intelligence Artificielle",
+      "description": "Découvrez les bases de l'IA et du machine learning",
+      "category": "ia",
+      "level": "debutant",
+      "duration": 3,
+      "price": 1799,
+      "image": "/images/formation-5.jpg",
+      "date": "2025-01-20",
+      "instructor": "Data Scientist"
+    },
+    {
+      "id": 6,
+      "title": "DevOps et CI/CD Avancé",
+      "description": "Maîtrisez les outils DevOps et les pipelines CI/CD",
+      "category": "devops",
+      "level": "avance",
+      "duration": 5,
+      "price": 2799,
+      "image": "/images/formation-6.jpg",
+      "date": "2025-02-01",
+      "instructor": "DevOps Engineer"
+    },
+    {
+      "id": 7,
+      "title": "Big Data et Analytics",
+      "description": "Analysez et traitez de grandes quantités de données",
+      "category": "data",
+      "level": "intermediaire",
+      "duration": 4,
+      "price": 2399,
+      "image": "/images/formation-7.jpg",
+      "date": "2025-02-10",
+      "instructor": "Data Engineer"
+    },
+    {
+      "id": 1,
+      "title": "Cybersécurité des Systèmes Industriels - Édition Avancée",
+      "description": "Version avancée avec laboratoires pratiques",
+      "category": "cybersecurite",
+      "level": "avance",
+      "duration": 7,
+      "price": 3499,
+      "image": "/images/formation-1-advanced.jpg",
+      "date": "2025-02-15",
+      "instructor": "Expert Cybersécurité"
+    },
+    {
+      "id": 8,
+      "title": "",
+      "description": "Formation sans titre",
+      "category": "cybersecurite",
+      "level": "debutant",
+      "duration": 2,
+      "price": 999,
+      "image": "",
+      "date": "2025-02-20",
+      "instructor": "Formateur"
+    },
+    {
+      "title": "Formation sans ID",
+      "description": "Cette formation n'a pas d'ID",
+      "category": "ia",
+      "level": "intermediaire",
+      "duration": 3,
+      "price": 1599,
+      "image": "/images/formation-9.jpg",
+      "date": "2025-02-25",
+      "instructor": "Formateur"
+    }
+  ]
+}
+
