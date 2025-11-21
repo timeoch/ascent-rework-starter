@@ -1,0 +1,32 @@
+{
+  "name": "ascent-formation-refonte",
+  "version": "1.0.0",
+  "description": "Refonte de la page d'accueil Ascent Formation - Exercice Full-Stack",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "node --watch backend/src/index.js",
+    "dev:frontend": "cd frontend && npm run dev",
+    "start": "node backend/src/index.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:backend": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPattern=backend",
+    "test:frontend": "cd frontend && npm test"
+  },
+  "keywords": [
+    "formation",
+    "refonte",
+    "fullstack",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "jest": "^29.7.0"
+  }
+}
+
