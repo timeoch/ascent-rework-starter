@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import HttpError from './utils/HttpError.js';
+import errorHandler from './middleware/errorHandler.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import homepageRouter from './routes/homepage.js';
@@ -44,17 +46,16 @@ app.use((req, res, next) => {
 
 app.use('/api/content', homepageRouter);
 
+// 404 handler -> forward to error handler
+app.use((req, res, next) => {
+  next(new HttpError(404, 'Not Found', 'Route non trouvée'));
+});
+
+// centralized error handler (should be last middleware)
+app.use(errorHandler);
+
 app.listen(PORT, () => {
   console.log(`🚀 Serveur backend démarré sur http://localhost:${PORT}`);
   console.log(`📚 Endpoints disponibles:`);
   console.log(`   GET /api/content/homepage - Contenu de la page d'accueil`);
-});
-
-app.use((err, req, res, next) => {
-  console.error('❌ Erreur serveur:', err && err.stack ? err.stack : err);
-  res.status(500).json({ success: false, error: 'Erreur interne du serveur' });
-});
-
-app.use((req, res) => {
-  res.status(404).json({ success: false, error: 'Route non trouvée' });
 });

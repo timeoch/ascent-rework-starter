@@ -2,6 +2,7 @@ import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import HttpError from '../utils/HttpError.js';
 import validateHomepage from '../utils/validateHomepage.js';
 
 const router = express.Router();
@@ -44,7 +45,7 @@ router.get('/homepage', async (req, res) => {
   try {
     const force = req.query.reload === '1';
     const homepage = await loadHomepage(force);
-    if (!homepage) return res.status(404).json({ success: false, error: "Contenu de la page d'accueil non trouvé" });
+    if (!homepage) throw new HttpError(404, "Homepage not found", "Contenu de la page d'accueil non trouvé");
     // --- Sanitize & validate input parameters ---
     let { page = 1, limit = 6, category, level, sort = 'date', order = 'desc' } = req.query;
     // Helper sanitize for simple strings (allow letters, numbers, spaces, -, _)
@@ -185,8 +186,11 @@ router.get('/homepage', async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('Erreur endpoint /api/content/homepage', err);
-    res.status(500).json({ success: false, error: "Erreur lors du chargement de la page d'accueil" });
+    // log server-side detail then forward a generic error to the handler
+    console.error('Erreur endpoint /api/content/homepage', err && err.stack ? err.stack : err);
+    // If it's already an HttpError, rethrow to be handled by centralized handler
+    if (err && err.name === 'HttpError') throw err;
+    throw new HttpError(500, err && err.message ? String(err.message) : 'Internal error', 'Erreur lors du chargement de la page d\'accueil');
   }
 });
 
