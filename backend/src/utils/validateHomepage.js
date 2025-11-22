@@ -1,6 +1,3 @@
-// Validation and normalization for homepage data
-// Exports a function validateHomepage(raw) -> { data, errors }
-
 function sanitizeString(v) {
   if (v === undefined || v === null) return '';
   return String(v).trim();
@@ -54,10 +51,8 @@ export default function validateHomepage(raw) {
     errors.push({ path: 'formations', message: 'formations must be an array' });
   }
 
-  // track ids and generate ids when missing/duplicate
   const seenIds = new Set();
   let maxId = 0;
-  // calculate initial maxId from numeric ids
   for (const it of items) {
     const id = Number(it && it.id);
     if (Number.isFinite(id) && id > maxId) maxId = id;

@@ -14,8 +14,6 @@ const __dirname = path.dirname(__filename);
 const PORT = PORT_LISTEN || 4200;
 const app = express();
 
-// Use helmet to set common security headers. Disable CSP here to avoid blocking dev assets,
-// but recommend enabling a strict CSP in production with proper configuration.
 app.use(helmet({ contentSecurityPolicy: false }));
 
 const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:4200')
@@ -25,9 +23,7 @@ const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000,http:/
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow non-browser requests (curl, server-to-server) when no origin is set.
     if (!origin) return callback(null, true);
-    // In production be strict: only allow configured origins. If env contains '*', treat it as explicit wildcard.
     if (allowedOrigins.includes('*')) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
     return callback(new Error('Origin not allowed by CORS'));
@@ -46,12 +42,10 @@ app.use((req, res, next) => {
 
 app.use('/api/content', homepageRouter);
 
-// 404 handler -> forward to error handler
 app.use((req, res, next) => {
   next(new HttpError(404, 'Not Found', 'Route non trouvée'));
 });
 
-// centralized error handler (should be last middleware)
 app.use(errorHandler);
 
 app.listen(PORT, () => {
