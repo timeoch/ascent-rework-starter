@@ -211,8 +211,71 @@ npm test
 
 ## Documentation
 
-Ce fichier README doit être complété avec :
-- La configuration et le démarrage (backend et frontend)
-- La liste des endpoints API et leur fonctionnement
-- L'architecture frontend (composants, gestion d'état)
-- Le mécanisme de mise en cache utilisé
+## Configuration et Démarrage
+
+### Backend
+
+1. Rendez-vous dans le dossier `backend/` :
+    ```bash
+    cd backend
+    npm install
+    npm run dev
+    ```
+2. Le backend utilise Express.js et charge le contenu de la page d'accueil depuis `data/homepage.json` via un mécanisme de cache asynchrone.
+
+### Frontend
+
+1. Rendez-vous dans le dossier `frontend/` :
+    ```bash
+    cd frontend
+    npm install
+    npm run dev
+    ```
+2. Le frontend est développé avec React (Vite) et communique avec l'API backend via un proxy configuré dans `vite.config.js`.
+
+## Endpoints API
+
+### Liste des endpoints principaux
+
+- `GET /api/content/homepage` :
+   - Retourne le contenu complet de la page d'accueil (titre, description, formations, etc.).
+   - Prend en charge la pagination (`?page=1&limit=6`), les filtres (`?category=cybersecurite&level=avance`), et le tri (`?sort=date&order=desc`).
+   - Valide et sanitize tous les paramètres d'entrée.
+   - Exemples :
+      - `/api/content/homepage?page=2&limit=4`
+      - `/api/content/homepage?category=devops&level=debutant&sort=title&order=asc`
+
+### Gestion des erreurs
+
+- Retourne des codes HTTP appropriés (400, 404, 500, etc.)
+- Les erreurs techniques ne sont jamais exposées en production.
+
+## Architecture Frontend
+
+Le frontend est structuré autour de composants React :
+
+- `Hero.jsx` : Affiche la section principale (titre, description, call-to-action).
+- `Formations.jsx` : Liste paginée des formations, gère l'affichage, le chargement et les erreurs.
+- `Filtres.jsx` : Permet de filtrer les formations par catégorie et niveau.
+- Gestion d'état :
+   - Utilisation de hooks React (`useState`, `useEffect`) pour gérer le chargement, les erreurs et les données.
+   - Optimisation des performances avec `useMemo` et `useCallback`.
+   - (Bonus) Utilisation possible de React Query/SWR pour la mise en cache des requêtes API.
+
+## Mécanisme de Mise en Cache (Backend)
+
+Le backend utilise un module de cache asynchrone pour charger et servir le contenu de `homepage.json` :
+
+- **Chargement initial** : Le fichier est chargé en mémoire au démarrage du serveur.
+- **Mise à jour automatique** :
+   - Le cache est surveillé via `fs.watch` ou rechargé périodiquement (ex : toutes les 30 secondes).
+   - Si le fichier est modifié, le cache est mis à jour de façon asynchrone, sans bloquer l'Event Loop.
+   - Les accès concurrents sont gérés pour éviter les race conditions (verrouillage ou file d'attente lors du rechargement).
+- **Métriques** :
+   - Nombre de hits/misses du cache, temps de chargement, exposés dans les logs ou via un endpoint dédié (bonus).
+- **Avantages** :
+   - Ne bloque jamais l'Event Loop.
+   - Permet de mettre à jour le contenu sans redémarrer le serveur.
+   - Minimise les lectures disque inutiles.
+
+Pour plus de détails sur la justification technique et la comparaison avec l'approche synchrone, voir le fichier `JUSTIFICATION.md`.
