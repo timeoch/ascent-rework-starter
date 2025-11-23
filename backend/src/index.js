@@ -12,44 +12,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = PORT_LISTEN || 4200;
-const app = express();
+import app from './server.js';
 
-app.use(helmet({ contentSecurityPolicy: false }));
-
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:4200')
-  .split(',')
-  .map(s => s.trim())
-  .filter(Boolean);
-
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes('*')) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('Origin not allowed by CORS'));
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type']
-}));
-
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Referrer-Policy', 'no-referrer');
-  next();
-});
-
-app.use('/api/content', homepageRouter);
-
-app.use((req, res, next) => {
-  next(new HttpError(404, 'Not Found', 'Route non trouvée'));
-});
-
-app.use(errorHandler);
-
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur backend démarré sur http://localhost:${PORT}`);
-  console.log(`📚 Endpoints disponibles:`);
-  console.log(`   GET /api/content/homepage - Contenu de la page d'accueil`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Serveur backend démarré sur http://localhost:${PORT}`);
+    console.log(`📚 Endpoints disponibles:`);
+    console.log(`   GET /api/content/homepage - Contenu de la page d'accueil`);
+  });
+}

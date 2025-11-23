@@ -1,7 +1,9 @@
 export default {
-  testEnvironment: 'node',
-  transform: {},
-  extensionsToTreatAsEsm: ['.js'],
+  testEnvironment: 'jsdom',
+  transform: {
+    '^.+\\.(js|jsx)$': 'esbuild-jest'
+  },
+  extensionsToTreatAsEsm: ['.jsx'],
   globals: {
     'ts-jest': {
       useESM: true
