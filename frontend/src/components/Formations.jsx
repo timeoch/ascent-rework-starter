@@ -1,163 +1,135 @@
-import React from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import Filtres from './Filtres';
+import { useQuery } from '@tanstack/react-query';
 
-class Formations extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      formations: [],
-      pagination: { page: 1, limit: 6, total: 0, totalPages: 0 },
-      loading: false,
-      error: null,
-      filters: { category: null, level: null },
-      options: { categories: [], levels: [] },
-      optionsLoading: false,
-      optionsError: null
+const fetchFormations = async ({ queryKey }) => {
+  const [_key, { page, limit, category, level }] = queryKey;
+  const qs = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (category) qs.set('category', String(category));
+  if (level) qs.set('level', String(level));
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), 10000);
+  try {
+    const res = await fetch(`/api/content/homepage?${qs.toString()}`, { signal: controller.signal });
+    clearTimeout(id);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (!json || !json.success) throw new Error(json && json.error ? json.error : 'Invalid response');
+    return json.data;
+  } catch (err) {
+    clearTimeout(id);
+    throw err;
+  }
+};
+
+function Formations() {
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(6);
+  const [filters, setFilters] = useState({ category: null, level: null });
+  const [online, setOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const onOnline = () => setOnline(true);
+    const onOffline = () => setOnline(false);
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
     };
-    this._controller = null;
-  }
+  }, []);
 
-  componentDidMount() {
-    const { page = 1, limit = 6 } = this.state.pagination;
-    this.fetchPage(page, limit);
-    this.fetchMetadata();
-  }
+  const { data, error, isLoading, isFetching, refetch, failureCount } = useQuery(
+    ['formations', { page, limit, category: filters.category, level: filters.level }],
+    fetchFormations,
+    {
+      keepPreviousData: true,
+      staleTime: 1000 * 60 * 5,
+      cacheTime: 1000 * 60 * 10,
+      retry: 2,
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000)
+    }
+  );
 
-  componentWillUnmount() {
-    if (this._controller) this._controller.abort();
-  }
+  const formations = useMemo(() => (data && data.formations) || [], [data]);
+  const pagination = useMemo(() => (data && data.pagination) || { page, limit, total: 0, totalPages: 0 }, [data, page, limit]);
 
-  fetchPage(page = 1, limit = 6, filters = null) {
-    if (this._controller) this._controller.abort();
-    this._controller = new AbortController();
-    const signal = this._controller.signal;
+  const onFiltersChange = useCallback(({ category, level }) => {
+    setFilters({ category: category || null, level: level || null });
+    setPage(1);
+  }, []);
 
-    this.setState({ loading: true, error: null });
-    const activeFilters = filters || this.state.filters || {};
-    const qs = new URLSearchParams({ page: String(page), limit: String(limit) });
-    if (activeFilters.category) qs.set('category', String(activeFilters.category));
-    if (activeFilters.level) qs.set('level', String(activeFilters.level));
-    fetch(`/api/content/homepage?${qs.toString()}`, { signal })
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then(json => {
-        if (!json || !json.success) throw new Error(json && json.error ? json.error : 'Invalid response');
-        const data = json.data || {};
-        this.setState({
-          formations: data.formations || [],
-          pagination: Object.assign({}, this.state.pagination, data.pagination || { page, limit }),
-          loading: false
-        });
-      })
-      .catch(err => {
-        if (err.name === 'AbortError') return;
-        this.setState({ loading: false, error: err.message || 'Erreur réseau' });
-      });
-  }
+  const goToPage = useCallback((p) => { setPage(p); }, []);
+  const changeLimit = useCallback((l) => { setLimit(l); setPage(1); }, []);
 
-  goToPage(p) {
-    const limit = this.state.pagination.limit || 6;
-    this.fetchPage(p, limit);
-  }
+  const categories = useMemo(() => (data && data.formations ? Array.from(new Set(data.formations.map(i => (i.category || '').toString()).filter(Boolean))) : []), [data]);
+  const levels = useMemo(() => (data && data.formations ? Array.from(new Set(data.formations.map(i => (i.level || '').toString()).filter(Boolean))) : []), [data]);
 
-  changeLimit(limit) {
-    // optimistically set limit in pagination and fetch page 1
-    this.setState(prev => ({ pagination: Object.assign({}, prev.pagination, { page: 1, limit }) }), () => {
-      this.fetchPage(1, limit);
-    });
-  }
+  return (
+    <section className="formations">
+      <h2>Nos Formations</h2>
 
-  fetchMetadata() {
-    this.setState({ optionsLoading: true, optionsError: null });
-    const qs = new URLSearchParams({ page: '1', limit: '100' });
-    fetch(`/api/content/homepage?${qs.toString()}`)
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then(json => {
-        if (!json || !json.success) throw new Error(json && json.error ? json.error : 'Invalid response');
-        const items = Array.isArray(json.data && json.data.formations) ? json.data.formations : [];
-        const categories = Array.from(new Set(items.map(i => (i.category || '').toString()).filter(Boolean)));
-        const levels = Array.from(new Set(items.map(i => (i.level || '').toString()).filter(Boolean)));
-        this.setState({ options: { categories, levels }, optionsLoading: false });
-      })
-      .catch((err) => { this.setState({ optionsLoading: false, optionsError: err && err.message ? err.message : 'Erreur metadata' }); });
-  }
+      <div className="formations-controls">
+        <Filtres categories={categories} levels={levels} value={filters} onChange={onFiltersChange} loading={false} disabled={isLoading} />
+        <div className="pagination-summary">
+          {pagination.total > 0 ? (
+            <span>Affichage page {pagination.page} / {pagination.totalPages} — {pagination.total} formations</span>
+          ) : null}
+        </div>
+        <div className="limit-select">
+          <label>Par page:&nbsp;</label>
+          <select value={pagination.limit} onChange={(e) => changeLimit(Number(e.target.value))} disabled={isLoading}>
+            <option value={6}>6</option>
+            <option value={12}>12</option>
+            <option value={24}>24</option>
+          </select>
+        </div>
+      </div>
 
-  onFiltersChange = ({ category, level }) => {
-    const filters = { category: category || null, level: level || null };
-    this.setState({ filters }, () => {
-      const limit = this.state.pagination.limit || 6;
-      this.fetchPage(1, limit, filters);
-    });
-  }
+      {!online ? <div className="offline-banner">Vous êtes hors-ligne — affichage du cache.</div> : null}
 
-  render() {
-    const { formations, pagination, loading, error } = this.state;
-
-    return (
-      <section className="formations">
-        <h2>Nos Formations</h2>
-
-        <div className="formations-controls">
-          <Filtres categories={this.state.options.categories} levels={this.state.options.levels} value={this.state.filters} onChange={this.onFiltersChange} loading={this.state.optionsLoading} disabled={this.state.loading || this.state.optionsLoading} />
-          <div className="pagination-summary">
-            {pagination.total > 0 ? (
-              <span>Affichage page {pagination.page} / {pagination.totalPages} — {pagination.total} formations</span>
-            ) : null}
-          </div>
-          <div className="limit-select">
-            <label>Par page:&nbsp;</label>
-            <select value={pagination.limit} onChange={(e) => this.changeLimit(Number(e.target.value))} disabled={this.state.loading}>
-              <option value={6}>6</option>
-              <option value={12}>12</option>
-              <option value={24}>24</option>
-            </select>
+      {isLoading ? <div>Chargement des formations...</div> : null}
+      {error ? (
+        <div style={{ color: 'red' }}>
+          Erreur: {error.message || String(error)}
+          <div>
+            {failureCount < 2 ? <span>Réessai automatique en cours...</span> : <button onClick={() => refetch()}>Réessayer</button>}
           </div>
         </div>
+      ) : null}
 
-        {this.state.optionsError ? <div style={{ color: 'orange' }}>Erreur lors du chargement des filtres : {this.state.optionsError}</div> : null}
+      {!isLoading && formations && formations.length === 0 ? (
+        <div>Aucune formation trouvée.</div>
+      ) : null}
 
-        {loading ? <div>Chargement des formations...</div> : null}
-        {error ? <div style={{ color: 'red' }}>Erreur: {error}</div> : null}
-
-        {!loading && formations && formations.length === 0 ? (
-          <div>Aucune formation trouvée.</div>
-        ) : null}
-
-        <div className="formations-grid">
-          {formations.map((f, idx) => {
-            const safeImage = typeof f.image === 'string' && (f.image.startsWith('/') || /^https?:\/\//i.test(f.image)) ? f.image : null;
-            return (
-              <div key={f.id != null ? f.id : `f-${idx}`} className="formation-card">
-                {safeImage ? <img src={safeImage} alt={f.title || 'Formation'} /> : null}
-                <h3>{f.title || '—'}</h3>
-                <p>{f.description || ''}</p>
-                <div className="formation-meta">
-                  <span>{f.category}</span>
-                  <span>{f.level}</span>
-                  <span>{f.duration} jours</span>
-                  <span>{f.price}€</span>
-                </div>
+      <div className="formations-grid">
+        {formations.map((f, idx) => {
+          const safeImage = typeof f.image === 'string' && (f.image.startsWith('/') || /^https?:\/\//i.test(f.image)) ? f.image : null;
+          return (
+            <article key={f.id != null ? f.id : `f-${idx}`} className="formation-card" aria-busy={isFetching}>
+              {safeImage ? <img loading="lazy" decoding="async" src={safeImage} alt={f.title || 'Formation'} style={{ transition: 'opacity 300ms', opacity: 1 }} /> : null}
+              <h3>{f.title || '—'}</h3>
+              <p>{f.description || ''}</p>
+              <div className="formation-meta">
+                <span>{f.category}</span>
+                <span>{f.level}</span>
+                <span>{f.duration} jours</span>
+                <span>{f.price}€</span>
               </div>
-            );
-          })}
-        </div>
+            </article>
+          );
+        })}
+      </div>
 
-        {/* Pagination controls */}
-        <div className="pagination-controls">
-          <button disabled={!pagination.prevPage} onClick={() => this.goToPage(pagination.prevPage || 1)}>Précédent</button>
-          {Array.from({ length: Math.max(1, pagination.totalPages) }, (_, i) => i + 1).map(p => (
-            <button key={p} disabled={p === pagination.page} onClick={() => this.goToPage(p)}>{p}</button>
-          ))}
-          <button disabled={!pagination.nextPage} onClick={() => this.goToPage(pagination.nextPage || pagination.page)}>Suivant</button>
-        </div>
-      </section>
-    );
-  }
+      <div className="pagination-controls">
+        <button disabled={!pagination.prevPage} onClick={() => goToPage(pagination.prevPage || 1)}>Précédent</button>
+        {Array.from({ length: Math.max(1, pagination.totalPages) }, (_, i) => i + 1).map(p => (
+          <button key={p} disabled={p === pagination.page} onClick={() => goToPage(p)}>{p}</button>
+        ))}
+        <button disabled={!pagination.nextPage} onClick={() => goToPage(pagination.nextPage || pagination.page)}>Suivant</button>
+      </div>
+    </section>
+  );
 }
 
-export default Formations;
+export default React.memo(Formations);

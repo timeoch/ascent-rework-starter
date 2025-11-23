@@ -240,3 +240,25 @@ body {
   to { transform: rotate(360deg); }
 }
 
+.offline-banner {
+  background: #fff4e5;
+  color: #663c00;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  margin: 0.8rem 0 1rem;
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.error {
+  padding: 1rem;
+  background: #fff1f2;
+  color: #611a15;
+  border-radius: 6px;
+}
+
