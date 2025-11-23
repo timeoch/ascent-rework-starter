@@ -1,7 +1,4 @@
-﻿# JUSTIFICATION (version courte, ton personnel)
-
-Résumé rapide
-Je montre ci‑dessous pourquoi la lecture synchrone (`fs.readFileSync`) n'est pas la meilleure option en production, et ce que j'ai mis en place à la place.
+﻿# JUSTIFICATION
 
 1) Pourquoi pas `fs.readFileSync` au démarrage ?
 - Données figées : si quelqu'un modifie `data/homepage.json` pendant que le serveur tourne, le service continue de renvoyer l'ancienne version jusqu'à redémarrage.
@@ -29,5 +26,3 @@ curl http://localhost:4200/api/content/homepage/metrics
 
 Remarque
 `fs.watch` dépend de la plateforme et peut se comporter différemment selon l'OS ; pour plusieurs instances en production, prévoir un cache partagé (Redis/pubsub) si on a besoin d'invalidation instantanée.
-
-Si tu veux, je peux raccourcir encore plus ou adapter le style (plus technique ou plus casual) pour que ça colle exactement à ta façon d'écrire.
