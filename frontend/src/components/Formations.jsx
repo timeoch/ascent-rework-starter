@@ -104,7 +104,7 @@ function Formations() {
 
       <div className="formations-grid">
         {formations.map((f, idx) => {
-          const safeImage = typeof f.image === 'string' && (f.image.startsWith('/') || /^https?:\/\//i.test(f.image)) ? f.image : null;
+          const safeImage = "https://www.francetravail.fr/files/live/sites/PE/files/secteurs-metiers/Domotique-web-telecom/sorienter-vers-linformatique850.jpg"
           return (
             <article key={f.id != null ? f.id : `f-${idx}`} className="formation-card" aria-busy={isFetching}>
               <div className="card-media">
