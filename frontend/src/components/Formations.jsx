@@ -24,7 +24,7 @@ const fetchFormations = async ({ queryKey }) => {
 
 function Formations() {
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(6);
+  const [limit, setLimit] = useState(8);
   const [filters, setFilters] = useState({ category: null, level: null });
   const [online, setOnline] = useState(navigator.onLine);
 
@@ -79,9 +79,9 @@ function Formations() {
         <div className="limit-select">
           <label>Par page:&nbsp;</label>
           <select value={pagination.limit} onChange={(e) => changeLimit(Number(e.target.value))} disabled={isLoading}>
-            <option value={6}>6</option>
-            <option value={12}>12</option>
-            <option value={24}>24</option>
+            <option value={4}>4</option>
+            <option value={8}>8</option>
+            <option value={16}>16</option>
           </select>
         </div>
       </div>
@@ -107,14 +107,27 @@ function Formations() {
           const safeImage = typeof f.image === 'string' && (f.image.startsWith('/') || /^https?:\/\//i.test(f.image)) ? f.image : null;
           return (
             <article key={f.id != null ? f.id : `f-${idx}`} className="formation-card" aria-busy={isFetching}>
-              {safeImage ? <img loading="lazy" decoding="async" src={safeImage} alt={f.title || 'Formation'} style={{ transition: 'opacity 300ms', opacity: 1 }} /> : null}
-              <h3>{f.title || '—'}</h3>
-              <p>{f.description || ''}</p>
-              <div className="formation-meta">
-                <span>{f.category}</span>
-                <span>{f.level}</span>
-                <span>{f.duration} jours</span>
-                <span>{f.price}€</span>
+              <div className="card-media">
+                {safeImage ? (
+                  <img loading="lazy" decoding="async" src={safeImage} alt={f.title || 'Formation'} />
+                ) : (
+                  <div className="card-placeholder">Image</div>
+                )}
+                <div className="price-badge">{f.price ? `${f.price}€` : ''}</div>
+              </div>
+
+              <div className="card-body">
+                <h3>{f.title || '—'}</h3>
+                <p className="card-desc">{f.description || ''}</p>
+                <div className="formation-meta">
+                  <span className="meta-chip">{f.category}</span>
+                  <span className="meta-chip">{f.level}</span>
+                  <span className="meta-chip">{f.duration ? `${f.duration} jours` : ''}</span>
+                </div>
+              </div>
+
+              <div className="card-footer">
+                <button className="cta">En savoir plus</button>
               </div>
             </article>
           );
